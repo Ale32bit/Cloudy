@@ -1,0 +1,16 @@
+{
+  "name": "cloudybot",
+  "version": "1.0.0",
+  "description": "Modular Bot for Discord",
+  "main": "index.js",
+  "dependencies": {
+    "colors": "^1.2.5",
+    "discord.js": "^11.3.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ale32bit",
+  "license": "GPL-3.0"
+}
