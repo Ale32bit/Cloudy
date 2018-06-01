@@ -78,7 +78,7 @@ const fireEvent = function(event,...parameters){
  * @param {...*} parameters Event params
  */
 const firePluginEvent = function(id,event,...parameters) {
-    let params = utils.parseArgs(arguments, 1);
+    let params = utils.parseArgs(arguments, 2);
     let plugin = plugins[id];
     if(!plugin){
         return;
