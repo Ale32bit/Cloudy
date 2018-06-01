@@ -1,5 +1,5 @@
 /*
-    Cloudy Discord Bot
+    Cloudy Discord Bot Engine 2.0
     (c) 2018 Ale32bit
 
     LICENSE: GNU GPLv3 (https://github.com/Ale32bit/Cloudy/blob/master/LICENSE)
@@ -7,321 +7,252 @@
     GitHub: https://github.com/Ale32bit/Cloudy
     Discord Tag: Ale32bit#5164
     Cloudy Discord Server: https://discord.gg/jhVJ5mZ
+
  */
 
-// libs
+const Cloudy = require("./cloudy");
+const utils = Cloudy.utils;
 const Discord = require("discord.js");
-const client = new Discord.Client();
 const fs = require("fs");
 const path = require("path");
 const colors = require("colors");
 
-// config
-const config = require("./config.json");
-const modules = {};
-const commands = {};
-const eventListeners = {};
-let defaultMessageListener = true;
+if(!fs.existsSync("config.json")){
+    fs.writeFileSync("config.json",JSON.stringify({
+        token: "BOT_TOKEN_HERE",
+        plugins_dir: "bot_plugins",
+        command_prefix: "!",
+        shards: "auto",
+    },null,2));
 
-const log = function(){
-    var date = new Date();
-    var time = {
-        hour: date.getHours(),
-        minute: date.getMinutes(),
-        seconds: date.getSeconds(),
-    };
-    var args = [];
-    args.push("["+time.hour+":"+time.minute+":"+time.seconds+"]");
-    for(var k in arguments){
-        args.push(arguments[k])
-    }
-    console.log.apply(this,args);
-};
-
-log("Starting Cloudy");
-
-// load modules
-fs.readdirSync(config.modules_dir).forEach(file => {
-    if(fs.lstatSync(path.resolve(__dirname, config.modules_dir, file)).isDirectory()) return;
-    if(file.endsWith(".js")){
-        try {
-            var module = require(path.resolve(__dirname, config.modules_dir, file));
-            if(typeof(module) === "object"){
-                if(!module.id){
-                    log("Invalid ID: "+file);
-                    return
-                }
-                module.filename = file;
-                module.name = module.name || module.id;
-                module.version = module.version || "1.0.0";
-                module.author = module.author || "n/a";
-                module.description = module.description || "*Description not provided*";
-                log("Loading "+module.name.green+"("+file.gray+")","v".blue+module.version.blue,"by "+module.author.green,"ID: "+module.id.magenta);
-                if(modules[module.id]){
-                    log("ID collision:".red,modules[module.id].filename.magenta,"and".red,file.magenta,"ID:".red,module.id.yellow)
-                }
-                /**
-                 * Log data in the console
-                 * @param {...*} data Log data
-                */
-                module.log = function(data){
-                    var args = [];
-                    args.push(colors.yellow(`[${module.name}]`));
-                    for(var k in arguments){
-                        args.push(arguments[k])
-                    }
-                    log.apply(this,args);
-                };
-                /**
-                 * Get all bot commands
-                 * @readonly
-                 * @returns {Object} Bot Commands
-                 */
-                module.getBotCommands = function(){
-                    var comms = {};
-                    for (var k in commands){
-                        comms[k] = commands[k];
-                    }
-                    return comms;
-                };
-                /**
-                 * Get bot config
-                 * @readonly
-                 * @returns {Object} Bot Config
-                 */
-                module.getBotConfig = function(){
-                    var conf = {};
-                    for (var k in config){
-                        if(k !== "token") {
-                            conf[k] = config[k];
-                        }
-                    }
-                    return conf;
-                };
-                /**
-                 * Get modules list
-                 * @readonly
-                 * @returns {array} Modules
-                 */
-                module.getModules = function(){
-                    var list = [];
-                    for (var k in modules){
-                        list.push(k);
-                    }
-                    return list;
-                };
-                /**
-                 * Retrieve information from a module
-                 * @readonly
-                 * @param {string} id ID of a module to retrieve
-                 * @returns {Object|null} Info
-                 */
-                module.getModuleInfo = function(id){
-                    var info = {};
-                    if(modules[id]){
-                        let d = modules[id];
-                        info.id = id;
-                        info.name = d.name;
-                        info.author = d.author;
-                        info.version = d.version;
-                        info.description = d.description;
-                        info.commands = {};
-                        for(var k in commands){
-                            var v = commands[k];
-                            if(v.id === id){
-                                info.commands[k] = {
-                                    extra: v.extra,
-                                    help: v.help,
-                                }
-                            }
-                        }
-                    } else {
-                        return null;
-                    }
-                    return info;
-                };
-                /**
-                 * Toggle native bot message listener
-                 * @param {boolean} status
-                 */
-                module.defaultMessageListener = function(status){
-                    if(typeof(status) === "boolean"){
-                        defaultMessageListener = status;
-                        log("Toggled default message listener:",status)
-                    }else{
-                        throw new Error("Expected boolean, got "+typeof(status));
-                    }
-                };
-                /**
-                 * Parse bot command arguments into an array
-                 * @param {Object} args arguments
-                 * @param {boolean} avoidMessage remove Discord.JS message object
-                 * @returns {Array}
-                 */
-                module.parseArgs = function(args,avoidMessage){
-                    var argss = [];
-                    for(var k in args){
-                        argss.push(args[k])
-                    }
-                    if(avoidMessage) argss.shift();
-                    return argss;
-                };
-                /**
-                 * Send data to another module
-                 * @param {String} moduleID Module ID
-                 * @param {*} data Any data to send
-                 */
-                module.tell = function(moduleID,data){
-                    if(modules[moduleID]){
-                        if(eventListeners[moduleID]){
-                            try {
-                                eventListeners[moduleID](module.id,data)
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        }
-                    }
-                };
-                /**
-                 * Listen and receive data from other modules
-                 * @param {function} cb Callback(id, data)
-                 */
-                module.listen = function(cb){
-                    if(typeof(cb) !== "function"){
-                        throw new Error("expected function, got "+typeof(cb));
-                    }
-                    eventListeners[module.id] = cb;
-                };
-
-                modules[module.id] = module;
-                if(typeof(module.onload) === "function"){
-                    try {
-                        module.onload(client)
-                    } catch(e) {
-                        console.error(e);
-                    }
-                }
-                if(typeof(module.commands)==="object"){
-                    for(let command in module.commands){
-                        let func = module.commands[command].function;
-                        if(typeof(func)==="function"){
-                            commands[command] = {
-                                function: func,
-                                id: module.id,
-                                extra: module.commands[command].extra,
-                            };
-                            log("Added command".blue,command.magenta,"from".blue,module.id.yellow)
-                        }else{
-                            log(func.yellow,"is not a function!".red)
-                        }
-                    }
-                }
-                if(typeof(module.helpList)==="object"){
-                    for(let cmd in module.helpList){
-                        let help = module.helpList[cmd];
-                        if(module.commands[cmd]){
-                            commands[cmd].help = help;
-                            log("Added command help".blue,cmd.magenta,"from".blue,module.id.yellow)
-                        }else{
-                            log(cmd.yellow,"help message has no command".red)
-                        }
-                    }
-                }
-            }else{
-                log("Invalid module "+file)
-            }
-        } catch(e) {
-            log("Could not load module "+file+": "+e.toString());
-            console.error(e);
-        }
-    }
-});
-
-commands["modules"]={
-    function: function(message){
-        var embed = new Discord.RichEmbed();
-        embed.setColor("#7289da");
-        embed.setTitle("Cloudy Modules");
-        for(var module in modules){
-            var data = modules[module];
-
-            embed.addField(data.name+" ("+module+")","v"+data.version+" by "+data.author);
-            for(var c in data.commands) {
-                var help = "Help message not provided";
-                if(data.helpList && data.helpList[c]) help = data.helpList[c];
-                embed.addField(c, help,true);
-            }
-            embed.addBlankField();
-        }
-        message.channel.send(embed);
-    },
-    help: "List all modules loaded by the bot",
-    id: "native",
-    extra: {
-        permission: "modules",
-    }
-};
-
-for(var mod in modules){
-    var module = modules[mod];
-    if(typeof(module.ready) === "function"){
-        try {
-            module.ready(client)
-        } catch(e) {
-            console.error(e);
-        }
-    }
+    console.log("Configuration file (config.json) created!",
+        "\ntoken: client token",
+        "\nplugins_dir: Directory containing the bot plugins",
+        "\ncommand_prefix: The prefix to run bot commands",
+        "\nshards: Amount of shards to use. \"auto\" for automatic.");
+    process.exit(1)
 }
 
-log("All working modules are loaded!".greenBG);
-
-client.on("message", message =>{
-    var exe = true;
-    for(var mod in modules){
-        var module = modules[mod];
-        if(typeof(module.onmessage) === "function"){
-            try {
-                exe = module.onmessage(message);
-                if(typeof(exe) !== "boolean") exe = true;
-                //break;
-            } catch(e) {
-                console.error(e);
-            }
-        }
+const config = (()=>{
+    try {
+        return require("./config.json");
+    } catch (e) {
+        console.log("Couldn't load the bot");
+        console.error(e);
+        process.exit(1);
     }
-    if(defaultMessageListener && exe) {
-        if (message.content.startsWith(config.command_prefix || "!")) {
-            let sCont = message.content.substring(config.command_prefix.length);
-            log(message.author.tag, "(" + message.author.id + "):", sCont.blue);
-            let splitted = sCont.split(" ");
-            let cmd = splitted[0];
-            let args = [];
-            args.push(message);
-            for (var i = 1; i < splitted.length; i++) {
-                args.push(splitted[i])
-            }
-            if (commands[cmd]) {
+})();
+
+// Define const vars
+
+const plugins = {};
+const client = new Discord.Client();
+
+// Define functions
+
+/**
+ * Fire cloudy events
+ * @param {string} event Event name
+ * @param {...*} parameters Event params
+ */
+const fireEvent = function(event,...parameters){
+    let params = utils.parseArgs(arguments,1);
+    for(let id in plugins){
+        let plugin = plugins[id];
+        if(plugin.events[event]){
+            for(let i = 0; i<plugin.events[event].length; i++){
                 try {
-                    commands[cmd].function.apply(this, args)
-                } catch (e) {
-                    //console.log("Failed executing".red,cmd.yellow,e.toString().red);
-                    console.error(e);
+                    plugin.events[event][i].apply(this,params)
+                } catch(e) {
+                    console.error(plugin.id,e)
                 }
             }
         }
     }
+};
+
+/**
+ * Fire cloudy events only to a plugin
+ * @param {string} id Plugin ID
+ * @param {string} event Event name
+ * @param {...*} parameters Event params
+ */
+const firePluginEvent = function(id,event,...parameters) {
+    let params = utils.parseArgs(arguments, 1);
+    let plugin = plugins[id];
+    if(!plugin){
+        return;
+    }
+    if (plugin.events[event]) {
+        for (let i = 0; i < plugin.events[event].length; i++) {
+            try {
+                plugin.events[event][i].apply(this, params)
+            } catch (e) {
+                console.error(plugin.id, e)
+            }
+        }
+    }
+};
+
+/**
+ * Find a command by name
+ * @param {string} name Command name
+ * @returns {object} command Command object containing its data
+ */
+const getCommand = function(name){
+    for(let id in plugins){
+        let plugin = plugins[id];
+        if(plugin.commands[name]) return plugin.commands[name]
+    }
+};
+
+const bot = {
+    fireEvent: fireEvent,
+    firePluginEvent: firePluginEvent,
+    getCommand: getCommand,
+
+    /**
+     * Call an API function of another plugin
+     * @param {string} id Plugin ID
+     * @param {string} name API function name
+     * @returns {function} function Function to call
+     */
+    call: function(id,name){
+        console.log(id,name);
+        if(plugins[id]){
+            if(plugins[id].api[name]){
+                return plugins[id].api[name];
+            }
+        }
+    },
+};
+
+// Load plugins
+
+const loadPlugin = function(file){
+    let plugin = require(path.resolve(__dirname, config.plugins_dir, file));
+    plugin.filename = file;
+    if (plugins[plugin.id]) {
+        if(plugin.override){
+            console.log(colors.yellow("[OVERRIDEN] Conflict id " + plugin.id + "!"));
+        }else {
+            console.log(colors.red("Conflict id " + plugin.id + "! " + file + " ignored"));
+        }
+        return;
+    }
+    plugins[plugin.id] = plugin;
+    console.log("Loaded plugin " + plugin.name.red + " (" + plugin.id.yellow + ") v" + plugin.version.green + " by " + plugin.author.blue);
+    firePluginEvent("load", client, bot);
+};
+
+fs.readdirSync(config.plugins_dir).forEach(file => {
+    try {
+        loadPlugin(file);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on("warn",(warn)=>{
-    console.log(warn);
+// Set native plugin
+
+plugins["native"] = {
+    name: "Cloudy",
+    version: "2.0.0",
+    author: "Ale32bit",
+    description: "Cloudy Discord bot",
+    override: true,
+    filename: __dirname,
+
+    events: {},
+    api: {},
+    commands: {
+        reload: {
+            function: function(message,pluginID){
+                if(pluginID === "native"){
+                    message.channel.send("WIP");
+                }
+
+                if(plugins[pluginID]){
+                    message.channel.send("Reloading "+pluginID).then(msg=>{
+                        let file = plugins[pluginID].filename;
+                        plugins[pluginID] = undefined;
+                        try {
+                            console.log("Reloading "+pluginID);
+                            firePluginEvent(pluginID,"reload");
+                            loadPlugin(file,pluginID);
+                            msg.edit("Successfully reloaded "+pluginID);
+                        } catch (e) {
+                            console.error(e);
+                            msg.edit(e.toString());
+                        }
+
+                    });
+                }else{
+                    message.channel.send("Plugin not found")
+                }
+            },
+            help: "Reload a plugin",
+            extra: {
+                permission: "reload"
+            }
+        }
+    }
+};
+
+// Listen to message events
+
+client.on("message",message=> {
+    fireEvent("message",message);
+    if (message.content.startsWith(config.command_prefix || "!")) {
+        let sCont = message.content.substring(config.command_prefix.length);
+        let guildMSG;
+        if (message.guild) {
+            guildMSG = message.guild.id;
+        }
+        console.log("[" + (guildMSG || "") + "]", message.author.tag, "(" + message.author.id + "):", sCont.yellow);
+        sCont = sCont.trim();
+        //console.log(sCont);
+        //sCont = split(sCont);
+        sCont = sCont.split(" ");
+        let splitted = sCont;
+        //console.log(splitted);
+        let cmd = splitted[0];
+        let args = [];
+        args.push(message);
+        for (let i = 1; i < splitted.length; i++) {
+            args.push(splitted[i])
+        }
+        let execute = true;
+        let ev = {
+            preventDefault: function(){
+                execute = false;
+            },
+        };
+        fireEvent("command",ev,cmd,args);
+        let command = getCommand(cmd);
+        if (command) {
+            try {
+                process.nextTick(()=> {
+                    if(execute) {
+                        command.function.apply(this, args);
+                        fireEvent("command_success", cmd, args);
+                    }else{
+                        console.log("Killed");
+                        fireEvent("command_killed",cmd,args)
+                    }
+                });
+            } catch (e) {
+                //console.log("Failed executing".red,cmd.yellow,e.toString().red);
+                console.error(e);
+                fireEvent("command_failed",cmd,args,e)
+            }
+        }
+    }
 });
 
-client.on("error",(e)=>{
-    console.error(e);
-});
-
-client.on('ready', () => {
-    log("Connected as "+ client.user.tag.bold +" ("+client.user.id.yellow+")");
+client.on("ready",()=>{
+    fireEvent("ready",client, bot);
+    console.log("Logged in as "+client.user.tag.magenta.underline)
 });
 
 client.login(config.token).catch(console.error);
