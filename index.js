@@ -131,6 +131,10 @@ const bot = {
 
 const loadPlugin = function(file){
     let plugin = require(path.resolve(__dirname, config.plugins_dir, file));
+	if(!plugin.id){
+        console.log(colors.red("Invalid ID " + file + "!"));
+        return;
+    }
     plugin.filename = file;
     if (plugins[plugin.id]) {
         if(plugin.override){
