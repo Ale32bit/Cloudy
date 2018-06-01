@@ -1,17 +1,21 @@
-# Cloudy
+# Cloudy Engine
 
-Cloudy is a Discord bot that uses Discord.js framework.
+Cloudy Engine is a simple light-weight modular Discord bot that uses [discord.js](https://discord.js.org/) library as interface.
 
-With Cloudy you can:
+This engine is designed to help develop commands and other functionalities in the form of plugins.
 
-- Have fun
-- Give cookies to your friends
-- Read xkcd comics
-- Manage groups of permission nodes
-- (More features in future...)
+## Configuration file
 
-## Cloudy Engine
+The configuration file is an auto generated JSON file stored in the directory root.
+It contains the client token, plugins directory path, command prefix and shards count.
 
-The engine loads and give an API on all modules inside a directory.
+Here is an example of the file
 
-Modules can interact with each other, process messages and allow/deny execution of commands, add new commands and functionalities.
+```json
+{
+  "token":"GC3M_th1s_MjMzMDQ2_15_3.f_4_LzOA.hnQz_f4k3_9c9StZ2Lda_t0k3n_S5t4kE",
+  "plugins_dir": "bot_plugins",
+  "command_prefix": "!",
+  "shards": "3"
+}
+```
