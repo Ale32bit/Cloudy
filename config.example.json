@@ -1,8 +1,0 @@
-{
-  "token":"CLIENT_TOKEN_HERE",
-  "admins":[
-    "USER_IDS_HERE"
-  ],
-  "command_prefix": "PREFIX",
-  "modules_dir": "cloudy_modules"
-}
