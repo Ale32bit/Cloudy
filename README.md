@@ -102,3 +102,14 @@ module.exports = plugin;
 Now run the bot and call the command `hello` with its command prefix.
 
 ![Result](https://i.ale32bit.me/i1ea7.png)
+
+
+### Warning about setting commands with dynamic arguments
+
+There are 2 types of functions:
+* arrow functions `(arg1, arg2) => { /* Code here */ }`
+* function declaration `function(arg1, arg2){ /* Code here */ }`
+
+Arrow functions don't accept `arguments` and will require defined variables.
+
+Use a declared function for these types of commands.
