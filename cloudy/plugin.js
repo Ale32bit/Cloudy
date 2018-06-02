@@ -55,6 +55,7 @@ const Plugin = class Plugin {
             function: func,
             help: help,
             extra: extra,
+            id: this.id,
         };
     };
 
