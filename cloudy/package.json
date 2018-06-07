@@ -1,0 +1,25 @@
+{
+  "name": "cloudy",
+  "version": "2.1.0",
+  "description": "Cloudy Module for Cloudy Engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ale32bit/Cloudy.git"
+  },
+  "keywords": [
+    "discord",
+    "discord.js",
+    "cloudy"
+  ],
+  "author": "Alessandro \"Ale32bit\"",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Ale32bit/Cloudy/issues"
+  },
+  "homepage": "https://github.com/Ale32bit/Cloudy#readme"
+}

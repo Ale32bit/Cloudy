@@ -1,5 +1,6 @@
 /*
     Cloudy module
+    API VERSION 2.1.0
 
     Cloudy Discord Bot Engine 2.0
     (c) 2018 Ale32bit
@@ -12,8 +13,10 @@
 
  */
 
+const _VERSION = "2.1.0";
+
 module.exports = {
-    version: "2.0.0",
+    version: _VERSION,
     Plugin: require("./plugin"),
     utils: require("./utils"),
 };
