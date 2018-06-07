@@ -1,7 +1,7 @@
 /*
     Plugin module
 
-    Cloudy Discord Bot Engine 2.0
+    Cloudy Discord Bot Engine 2.1.0
     (c) 2018 Ale32bit
 
     LICENSE: GNU GPLv3 (https://github.com/Ale32bit/Cloudy/blob/master/LICENSE)
