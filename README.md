@@ -1,5 +1,7 @@
 # Cloudy Engine
 
+[![Discord Bots](https://discordbots.org/api/widget/445923318541844482.svg)](https://discordbots.org/bot/445923318541844482)
+
 Cloudy Engine is a simple light-weight modular Discord bot that uses [discord.js](https://discord.js.org/) library as interface.
 
 This engine is designed to help develop commands and other functionalities in the form of plugins.
