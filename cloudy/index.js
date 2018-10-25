@@ -1,8 +1,8 @@
 /*
     Cloudy module
-    API VERSION 2.1.0
+    API VERSION 2.2.2
 
-    Cloudy Discord Bot Engine 2.0
+    Cloudy Discord Bot Engine 2.2
     (c) 2018 Ale32bit
 
     LICENSE: GNU GPLv3 (https://github.com/Ale32bit/Cloudy/blob/master/LICENSE)
@@ -13,7 +13,7 @@
 
  */
 
-const _VERSION = "2.1.0";
+const _VERSION = "2.2.2";
 
 module.exports = {
     version: _VERSION,

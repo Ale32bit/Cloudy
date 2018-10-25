@@ -1,7 +1,7 @@
 /*
     Utils module
 
-    Cloudy Discord Bot Engine 2.1.0
+    Cloudy Discord Bot Engine 2.2.2
     (c) 2018 Ale32bit
 
     LICENSE: GNU GPLv3 (https://github.com/Ale32bit/Cloudy/blob/master/LICENSE)
@@ -43,6 +43,7 @@ utils.getUser = function(client,id){
     if(typeof(id) !== "string") throw new TypeError("Expected id to be string");
     id=id.replace(/^<@/,"");
     id=id.replace(/>$/,"");
+    id=id.replace(/!/,"");
     return client.users.fetch(id);
 };
 
@@ -58,6 +59,20 @@ utils.forEach = function(object,callback){
         let value = object[key];
         callback(key,value);
     }
+};
+
+/**
+ * Check if a value is in an array
+ * @param {array} array Array
+ * @param {*} value Value
+ * @returns {boolean}
+ */
+utils.inArray = function (array, value) {
+    let i;
+    for (i = 0; i < array.length; i++) {
+        if (value === array[i]) return true;
+    }
+    return false;
 };
 
 module.exports = utils;

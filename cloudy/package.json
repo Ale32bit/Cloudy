@@ -1,6 +1,6 @@
 {
   "name": "cloudy",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Cloudy Module for Cloudy Engine",
   "main": "index.js",
   "scripts": {
