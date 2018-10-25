@@ -26,7 +26,10 @@ Here is an example of the file
   "token":"GC3M_th1s_MjMzMDQ2_15_3.f_4_LzOA.hnQz_f4k3_9c9StZ2Lda_t0k3n_S5t4kE",
   "plugins_dir": "bot_plugins",
   "command_prefix": "!",
-  "shards": "3"
+  "shards": "3",
+  "admins": [
+    "113673208296636420"
+  ]
 }
 ```
 
@@ -75,7 +78,7 @@ The callback will get the [discord.js message container](https://discord.js.org/
 Example:
 
 ```javascript
-plugin.setCommand("hello", function(message){
+plugin.addCommand("hello", function(message){
   message.channel.send("Hello world!")
 })
 ```
@@ -94,7 +97,7 @@ const plugin = new Plugin("hello", { // "hello" is the plugin ID
   description: "Have a nice day!",
 })
 
-plugin.setCommand("hello", function(message){
+plugin.addCommand("hello", function(message){
   message.channel.send("Hello world!")
 })
 
